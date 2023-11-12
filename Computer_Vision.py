@@ -1,10 +1,10 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 from keras.datasets import mnist
 
-
+# The following code (Separated by --) is from PRASHANT BANERJEE posted to "Kaggle" titled "MNIST - Deep Neural Network with Keras"
+#---------------------------------------------------------------------------------------------------------------------------------------------
 # x = image y = label
 # train = training data 
 # test = testing data
@@ -35,7 +35,7 @@ for i in range(len(Randnums)):
     
 #plt.show()
 
-
+# End of PRASHANT BANERJEE code
 #---------------------------------------------------------------------------------------------------------------------------
 
 
@@ -54,13 +54,13 @@ train_flat, test_flat = x_train.reshape(x_train.shape[0], -1), x_test.reshape(x_
 # checking that works ^^^^^ (It does :)) 
 # train_flat = (60000, 784)
 # test_flat = (10000, 784)
-print(train_flat.shape)
-print('\n', test_flat.shape, '\n')
+print( '\n',train_flat.shape)
+print('\n', test_flat.shape)
 
 
 
-# Function for generating random weights for training data - not currently being used
-def generate_training_wt(x, y):
+# Function for generating random weights for training data - not currently being used, if we create our own optimizer it will be useful
+def training_wt(x, y):
     empty = []
     x = x_train
     y = y_train
@@ -70,25 +70,27 @@ def generate_training_wt(x, y):
 
 
 
-#------------------------------------------------------------------------------------------------------------------------------
-
-
+# FUNCTIONS AND MODEL CREATION
 
 # Activation function (could directly use keras library - tf.keras.layers.Dense, activation = sigmoid, relU, etc)
+# relU activation function checks value from previous layer (all inputs are >= 0), if x > 0, that value is unchanched, if x < 0, value is set to 0 
 def relUActivation(x):
     return(tf.maximum(0.0, x))
 
 # Building model of NN
-# Dense gives activation(dot product of (input, weights) + bias) = output for total layers
+# Sequential groups a linear stack of layers into a keras model
+# Dense gives hidden layers: activation(dot product of (input, weights) + bias) = output for next hidden layer
+# Activation function is Relu shown above
 # 256 layers are chosen because it provides better accuracy than 128, and about the same as >256.
 
 NNmodel = tf.keras.Sequential([tf.keras.layers.Dense(256, activation = relUActivation), 
-# Second Dense for final layer, total classifiers possible (0-9 is 10 numbers)
+# Second Dense for final layer, condensing down to total classifiers possible (0-9 is 10 numbers)
                                tf.keras.layers.Dense(10)])
 
 
-# Compile model using adam optimizer, and SparseCategoricalCrossentropy
-# loss function Sparse.... is used because data is a flattened integer array, rather than one-hot
+# Compile model using adam optimizer (one of the best for image classification), and SparseCategoricalCrossentropy as loss function 
+# loss function SparseCC computes croossentropy loss between label and predictions.... 
+# is used because our data (train_flat and test_flat) are flattened integer arrays
 NNmodel.compile(optimizer = 'adam', 
                 loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True), 
                 metrics=['accuracy'])
@@ -96,6 +98,9 @@ NNmodel.compile(optimizer = 'adam',
 # Training model with 10 epochs
 NNmodel.fit(train_flat, y_train, epochs = 10)
 
+
+
+# MODEL TESTING
 
 # Testing accuracy and loss on test data
 
