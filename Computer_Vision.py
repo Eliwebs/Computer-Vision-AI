@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.datasets import mnist
+import PIL
+from PIL import Image
 
 # The following code (Separated by --) is from PRASHANT BANERJEE posted to "Kaggle" titled "MNIST - Deep Neural Network with Keras"
 #---------------------------------------------------------------------------------------------------------------------------------------------
@@ -109,3 +111,69 @@ loss, accuracy = NNmodel.evaluate(test_flat, y_test, verbose = 2)
 print(f'\nTest loss', loss)
 print(f'\nTest accuracy', accuracy)
 
+
+# TESTING BASED ON OUR OWN HANDWRITTEN NUMBERS
+
+def handwritten(image_path):
+    # using PIL to open PNG image from local machine 
+    test_img = Image.open(image_path)
+    # converting picture to greyscale
+    test_img = test_img.convert('L')
+    # resizing image to 28x28
+    test_img = test_img.resize((28, 28))
+    # converting 28x28 into np array
+    img_array = np.array(test_img)
+    # standardizing pixel values between 0 & 1
+    img_array = img_array / 255
+    # reshaping to flatten image
+    img_flat = img_array.reshape(-1)
+    # add another dimension to np array so that TF can use image
+    img_batch = np.expand_dims(img_flat, axis=0)
+
+    # returning preprocessed image
+    return img_batch
+
+
+image_path = '/Users/EliWebster/Downloads/IMG_7378.jpg'
+
+
+test_case = handwritten(image_path)
+
+# This gives us the array of raw unnormalized scores for each number. The highest score is what the NN will predict.
+prediction = NNmodel.predict(test_case)
+
+# This gives us the highest score as a single digit from the unnormalized score. argmax takes the highest value from our array.
+predicted_num = np.argmax(prediction, axis=1)
+
+# Since predicted_num is an array with one element (the predicted class), we print this value using predicted_class[0]
+print(f"\nPredicted digit:", predicted_num[0])
+
+test_num = Image.open(image_path)
+test_num.show()
+
+# It sucks at identifying my images...
+
+
+# quick for loop to test more than 1 number
+img_start = 7378
+for i in range(0, 9):
+    img_start += 1
+    img_start = str(img_start)
+    image_path = '/Users/EliWebster/Downloads/IMG_' + img_start + '.jpg'
+    print(image_path)
+
+    test = handwritten(image_path)
+
+    # This gives us the array of raw unnormalized scores for each number. The highest score is what the NN will predict.
+    pred = NNmodel.predict(test)
+    print(pred)
+
+    # This gives us the highest score as a single digit from the unnormalized score. argmax takes the highest value from our array.
+    predicted_nums = np.argmax(pred, axis=1)
+
+# Since predicted_num is an array with one element (the predicted class), we can print this value using predicted_class[0]
+    print(f"\nPredicted digitxxx:", predicted_nums[0])
+
+    img_start = int(img_start)
+
+# it still sucks
