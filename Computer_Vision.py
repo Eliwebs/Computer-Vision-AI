@@ -146,14 +146,6 @@ def handwritten(image_path):
 
 
 
-#plt.figure(figsize=(1,1))
-#plt.plot(1, 1)
-#image = test_case
-#image = image.reshape(28,28)
-#plt.imshow(image, cmap='gray')
-#plt.axis('off')
-#plt.show()
-
 # This gives us the array of raw unnormalized scores for each number. The highest score is what the NN will predict.
 #prediction = NNmodel.predict(test_case)
 #print(prediction)
@@ -186,15 +178,12 @@ def handwritten_folder(image_path):
     # standardizing pixel values between 0 & 1
     img_array = img_array / 255
     # reshaping to flatten image
-    img_flat = img_array.reshape(-1)
+    img_flat = img_array.reshape(784)
     # add another dimension to np array so that TF can use image
-    img_batch = np.expand_dims(img_flat, axis=0)
-
-    # returning preprocessed image
-    return img_batch
+    return img_flat
 
 
-IMG_pathdirectory = pathlib.Path('https://github.com/Eliwebs/B351_Group19_Final/tree/main/Painted_Images')
+IMG_pathdirectory = '/Users/EliWebster/Downloads/Painted_Images'
 
 # Initialize a list to store images
 image_list = []
@@ -206,18 +195,51 @@ for filename in os.listdir(IMG_pathdirectory):
         
         # Open the image file and append it to the list
         img = Image.open(file_path)
-        image_list.append(img)
+        img_prepro = handwritten_folder(img)
+        image_list.append(img_prepro)
 
-Label_pathdirectory = pathlib.Path('https://github.com/Eliwebs/B351_Group19_Final/blob/main/Painted_Labels')
 
-open(Label_pathdirectory)
+Label_pathdirectory = '/Users/EliWebster/Downloads/Painted_Labels.txt'
 
-for i in image_list:
-    handwritten_folder(i)
+with open(Label_pathdirectory, 'r') as file:
+    labels = file.read().splitlines()  # Assuming each line in the file is a label
+labels_array = np.array(labels, dtype=int)
 
-loss1, accuracy1 = NNmodel.evaluate(image_list, Label_pathdirectory, verbose = 2)
+#print(image_list[0])
+
+#for i in image_list:
+#    handwritten_folder(i)
+
+#print(image_list[0])
+
+common_size = (28, 28)
+image_array = np.array([np.array(image.resize(common_size)).astype(np.float32) for image in image_list])
+
+image_list = np.array(image_list)
+image_array = image_list.reshape(image_list.shape[0], -1)
+
+#for i, img in enumerate(image_array):
+#    print(f"Shape of image {i}: {img.shape}")
+
+# Stack the flattened images
+array_flat = np.vstack(image_array)
+print(f"Shape of array_flat: {array_flat.shape}")
+#tf.convert_to_tensor(array_flat)
+array_flat.dtype
+array_flat.shape
+#print(array_flat[0])
+
+loss1, accuracy1 = NNmodel.evaluate(array_flat, labels_array, verbose = 2)
 print(f'\nTest loss', loss1)
 print(f'\nTest accuracy', accuracy1)
+
+plt.figure(figsize=(1,1))
+plt.plot(1, 1)
+image = image_list[0]
+image = image.reshape(28,28)
+plt.imshow(image, cmap='gray')
+plt.axis('off')
+plt.show()
 
 # quick for loop to test more than 1 number
 #img_start = 7378
