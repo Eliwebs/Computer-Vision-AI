@@ -115,7 +115,7 @@ print(f'\nTest loss', loss)
 print(f'\nTest accuracy', accuracy)
 
 
-# TESTING BASED ON OUR OWN HANDWRITTEN NUMBERS
+# TESTING SINGLE HANDWRITTEN NUMBERS
 
 def handwritten(image_path):
     # using PIL to open PNG image from local machine 
@@ -159,10 +159,10 @@ def handwritten(image_path):
 #test_num = Image.open(image_path)
 #test_num.show()
 
-# It sucks at identifying my images...
+# It sucks at identifying single images...
 
 
-
+# function for converting a file pulled from directory
 
 def handwritten_folder(image_path):
     # using PIL to open PNG image from local machine 
@@ -179,9 +179,11 @@ def handwritten_folder(image_path):
     img_array = img_array / 255
     # reshaping to flatten image
     img_flat = img_array.reshape(784)
-    # add another dimension to np array so that TF can use image
+    # returning that flat array
     return img_flat
 
+
+# path for image files
 
 IMG_pathdirectory = '/Users/EliWebster/Downloads/Painted_Images'
 
@@ -193,46 +195,43 @@ for filename in os.listdir(IMG_pathdirectory):
     if filename.endswith(".jpg") or filename.endswith(".png"):  # Add other extensions if needed
         file_path = os.path.join(IMG_pathdirectory, filename)
         
-        # Open the image file and append it to the list
+        # Open the image file
         img = Image.open(file_path)
+        # Preprocess image
         img_prepro = handwritten_folder(img)
+        # Append preprocessed image to image_list
         image_list.append(img_prepro)
 
 
+# Path for labels (single values separated by line is the correct format)
 Label_pathdirectory = '/Users/EliWebster/Downloads/Painted_Labels.txt'
 
 with open(Label_pathdirectory, 'r') as file:
-    labels = file.read().splitlines()  # Assuming each line in the file is a label
+    labels = file.read().splitlines()  #  each line in the file is a label, split file by line for list of labels
 labels_array = np.array(labels, dtype=int)
 
-#print(image_list[0])
 
-#for i in image_list:
-#    handwritten_folder(i)
-
-#print(image_list[0])
-
-common_size = (28, 28)
-image_array = np.array([np.array(image.resize(common_size)).astype(np.float32) for image in image_list])
-
+# Converting image_list to np array so TF can process (this is an array of arrays)
 image_list = np.array(image_list)
+# reshaping so we have 50 flattened image arrays
 image_array = image_list.reshape(image_list.shape[0], -1)
 
+# This code below will print the shape of each image, should be 784 (it is)
 #for i, img in enumerate(image_array):
 #    print(f"Shape of image {i}: {img.shape}")
 
-# Stack the flattened images
+# Stack the flattened images so it is in format (x, 784) - same as MNIST data
 array_flat = np.vstack(image_array)
+# checking that shape is (x,784) (it is)
 print(f"Shape of array_flat: {array_flat.shape}")
-#tf.convert_to_tensor(array_flat)
-array_flat.dtype
-array_flat.shape
-#print(array_flat[0])
+
+# use model.evaluate to test modoel's performance on testing data
 
 loss1, accuracy1 = NNmodel.evaluate(array_flat, labels_array, verbose = 2)
 print(f'\nTest loss', loss1)
 print(f'\nTest accuracy', accuracy1)
 
+# Plotting one preprocessed image to ensure visually similar to MNIST
 plt.figure(figsize=(1,1))
 plt.plot(1, 1)
 image = image_list[0]
@@ -241,30 +240,10 @@ plt.imshow(image, cmap='gray')
 plt.axis('off')
 plt.show()
 
-# quick for loop to test more than 1 number
-#img_start = 7378
-#for i in range(0, 9):
-#    img_start += 1
-#    img_start = str(img_start)
-#    image_paths = '/Users/EliWebster/Downloads/IMG_' + img_start + '.jpg'
-#    print(image_paths)
 
-#    test = handwritten(image_paths)
 
-    # This gives us the array of raw unnormalized scores for each number. The highest score is what the NN will predict.
-#    pred = NNmodel.predict(test)
-#    print(pred)
-
-    # This gives us the highest score as a single digit from the unnormalized score. argmax takes the highest value from our array.
-#    predicted_nums = np.argmax(pred, axis=1)
-
-# Since predicted_num is an array with one element (the predicted class), we can print this value using predicted_class[0]
-#    print(f"\nPredicted digitxxx:", predicted_nums[0])
-
-#    img_start = int(img_start)
-
-# it still sucks
-
+# Plotting data - currently manual. Next step - pull accuracy and loss directly from model.evaluate and populate list 
+# Plotting process will be automatic if this is done correctly
 
 epochs = range(1, 11)
 #training_accuracy = [0.9338, 0.9729, 0.9817, 0.9861, 0.9899, 0.9917, 0.9940, 0.9951, 0.9961, 0.9961]
