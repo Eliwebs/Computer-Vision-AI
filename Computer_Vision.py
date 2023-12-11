@@ -38,7 +38,7 @@ for i in range(len(Randnums)):
     plt.imshow(image, cmap='gray')
     plt.axis('off')
     
-#plt.show()
+plt.show()
 
 # End of PRASHANT BANERJEE code
 #---------------------------------------------------------------------------------------------------------------------------
@@ -101,7 +101,8 @@ NNmodel.compile(optimizer = 'Adam',
                 metrics=['accuracy'])
 
 # Training model with 10 epochs
-NNmodel.fit(train_flat, y_train, epochs = 10)
+graph_data = NNmodel.fit(train_flat, y_train, epochs = 10)
+graph_data
 
 
 
@@ -117,54 +118,9 @@ print(f'\nTest accuracy', accuracy)
 
 # TESTING SINGLE HANDWRITTEN NUMBERS
 
-def handwritten(image_path):
-    # using PIL to open PNG image from local machine 
-    test_img = Image.open(image_path)
-    # converting picture to greyscale
-    test_img = test_img.convert('L')
-    # Inverting black & white to match training data
-    test_img = PIL.ImageOps.invert(test_img)
-    # resizing image to 28x28
-    test_img = test_img.resize((28, 28))
-    # converting 28x28 into np array
-    img_array = np.array(test_img)
-    # standardizing pixel values between 0 & 1
-    img_array = img_array / 255
-    # reshaping to flatten image
-    img_flat = img_array.reshape(-1)
-    # add another dimension to np array so that TF can use image
-    img_batch = np.expand_dims(img_flat, axis=0)
+# function for preprocessing a file pulled from directory
 
-    # returning preprocessed image
-    return img_batch
-
-
-#image_path = '/Users/EliWebster/Downloads/5_handwritten.png'
-
-
-#test_case = handwritten(image_path)
-
-
-
-# This gives us the array of raw unnormalized scores for each number. The highest score is what the NN will predict.
-#prediction = NNmodel.predict(test_case)
-#print(prediction)
-
-# This gives us the highest score as a single digit from the unnormalized score. argmax takes the highest value from our array.
-#predicted_num = np.argmax(prediction, axis=1)
-
-# Since predicted_num is an array with one element (the predicted class), we print this value using predicted_class[0]
-#print(f"\nPredicted digit:", predicted_num[0])
-
-#test_num = Image.open(image_path)
-#test_num.show()
-
-# It sucks at identifying single images...
-
-
-# function for converting a file pulled from directory
-
-def handwritten_folder(image_path):
+def handwritten_prepro(image_path):
     # using PIL to open PNG image from local machine 
     test_img = image_path
     # converting picture to greyscale
@@ -184,21 +140,23 @@ def handwritten_folder(image_path):
 
 
 # path for image files
-
 IMG_pathdirectory = '/Users/EliWebster/Downloads/Painted_Images'
 
-# Initialize a list to store images
+
+# Initialize a list to store images, sort by name so labels match
 image_list = []
+directory = os.listdir(IMG_pathdirectory)
+sorted_file = sorted(directory)
 
 # Loop through all files in the folder
-for filename in os.listdir(IMG_pathdirectory):
+for filename in sorted_file:
     if filename.endswith(".jpg") or filename.endswith(".png"):  # Add other extensions if needed
         file_path = os.path.join(IMG_pathdirectory, filename)
         
         # Open the image file
         img = Image.open(file_path)
         # Preprocess image
-        img_prepro = handwritten_folder(img)
+        img_prepro = handwritten_prepro(img)
         # Append preprocessed image to image_list
         image_list.append(img_prepro)
 
@@ -225,11 +183,35 @@ array_flat = np.vstack(image_array)
 # checking that shape is (x,784) (it is)
 print(f"Shape of array_flat: {array_flat.shape}")
 
-# use model.evaluate to test modoel's performance on testing data
 
+# use model.evaluate to test modoel's performance on testing data
 loss1, accuracy1 = NNmodel.evaluate(array_flat, labels_array, verbose = 2)
 print(f'\nTest loss', loss1)
 print(f'\nTest accuracy', accuracy1)
+
+
+
+
+
+# Plotting performance
+
+# Accuracy
+plt.plot(graph_data.history['accuracy'])
+plt.plot(accuracy1)
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train'], loc='upper left')
+plt.show()
+# Loss
+plt.plot(graph_data.history['loss'])
+plt.plot(loss1)
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train'], loc='upper left')
+plt.show()
+
 
 # Plotting one preprocessed image to ensure visually similar to MNIST
 plt.figure(figsize=(1,1))
@@ -238,54 +220,30 @@ image = image_list[0]
 image = image.reshape(28,28)
 plt.imshow(image, cmap='gray')
 plt.axis('off')
+plt.suptitle(f'Label is: {labels_array[0]}', fontsize=16)
+plt.show()
+
+# grabbing 25 of our own random images 
+Randnums = np.random.randint(0, image_array.shape[0], size=25)
+images = image_array[Randnums]
+
+
+# plotting 25 random images
+plt.figure(figsize=(5,5))
+for i in range(len(Randnums)):
+    plt.subplot(5, 5, i + 1)
+    image = images[i]
+    plt.imshow(image, cmap='gray')
+    plt.title(f'This is:' [labels_array[i]])
+    plt.axis('off')
+    
 plt.show()
 
 
 
-# Plotting data - currently manual. Next step - pull accuracy and loss directly from model.evaluate and populate list 
-# Plotting process will be automatic if this is done correctly
-
-epochs = range(1, 11)
-#training_accuracy = [0.9338, 0.9729, 0.9817, 0.9861, 0.9899, 0.9917, 0.9940, 0.9951, 0.9961, 0.9961]
-#training_loss = [0.2249, 0.0914, 0.0613, 0.0442, 0.0322, 0.0261, 0.0188, 0.0163, 0.0125, 0.0117]
-
-training_accuracy = [0.9346, 0.9717, 0.9805, 0.9864, 0.9892, 0.9913, 0.9936, 0.9948, 0.9949, 0.9963 ]  # Example data
-training_loss = [0.2282, 0.0940, 0.0621, 0.0452, 0.0349, 0.0265, 0.0203, 0.0157, 0.0146, 0.0107]  # Example data
-
-plt.figure(figsize=(12, 6))
-
-# Plotting testing accuracy
-plt.subplot(1, 2, 1)
-plt.plot(epochs, training_accuracy,'bo-', label='Testing Accuracy')
-plt.title('Testing Accuracy over Epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
-
-# Plotting testing loss
-plt.subplot(1, 2, 2)
-plt.plot(epochs, training_loss, 'ro-', label='Testing Loss')
-plt.title('Testing Loss over Epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.tight_layout()
-plt.show()
-
-
-
-test_accuracy = 0.9782000184059143
-test_loss = 0.08583325892686844
-
+# Bar chart for testing our own data
 plt.figure(figsize=(8, 6))
-
-# Creating bars
-plt.bar(['Test Accuracy', 'Test Loss'], [test_accuracy, test_loss], color=['blue', 'red'])
-
-# Adding title and labels
+plt.bar(['Test Accuracy', 'Test Loss'], [accuracy1, loss1], color=['blue', 'red'])
 plt.title('Test Accuracy and Loss')
 plt.ylabel('Value')
-
-# Showing the plot
 plt.show()
