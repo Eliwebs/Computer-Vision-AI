@@ -32,6 +32,7 @@ labels = y_train[Randnums]
 
 # plotting 25 random images
 plt.figure(figsize=(5,5))
+plt.title('25 random MNIST Images')
 for i in range(len(Randnums)):
     plt.subplot(5, 5, i + 1)
     image = images[i]
@@ -46,6 +47,7 @@ plt.show()
 
 
 # PREPROCESSING
+#---------------------------------------------------------------------------------------------------------------------------
 
 # normalize pixel values between 0-1
 x_train, x_test = x_train / 255.0, x_test / 255.0
@@ -56,29 +58,21 @@ train_flat, test_flat = x_train.reshape(x_train.shape[0], -1), x_test.reshape(x_
 
 
 
-# checking that works ^^^^^ (It does :)) 
 # train_flat = (60000, 784)
 # test_flat = (10000, 784)
 print( '\n',train_flat.shape)
 print('\n', test_flat.shape)
 
-
-
-# Function for generating random weights for training data - not currently being used, if we create our own optimizer it will be useful
-def training_wt(x, y):
-    empty = []
-    x = x_train
-    y = y_train
-    for i in range(x * y):
-        empty.append(np.random.randn())
-    return(np.array(empty).reshape(x, y))
+# END OF PREPROCESSING
+#---------------------------------------------------------------------------------------------------------------------------
 
 
 
 # FUNCTIONS AND MODEL CREATION
+#---------------------------------------------------------------------------------------------------------------------------
 
 # Activation function (could directly use keras library - tf.keras.layers.Dense, activation = sigmoid, relU, etc)
-# relU activation function checks value from previous layer (all inputs are >= 0), if x > 0, that value is unchanched, if x < 0, value is set to 0 
+# relU activation function checks value from previous layer, if x > 0, that value is unchanched, if x < 0, value is set to 0 
 def relUActivation(x):
     return(tf.maximum(0.0, x))
 
@@ -116,9 +110,15 @@ print(f'\nTest loss', loss)
 print(f'\nTest accuracy', accuracy)
 
 
-# TESTING SINGLE HANDWRITTEN NUMBERS
+# END OF FUNCTIONS AND MODEL CREATION
+#---------------------------------------------------------------------------------------------------------------------------
 
-# function for preprocessing a file pulled from directory
+
+
+# TESTING OUR OWN DATASET OF HANDWRITTEN NUMBERS
+#---------------------------------------------------------------------------------------------------------------------------
+
+# function for preprocessing a file pulled from local directory
 
 def handwritten_prepro(image_path):
     # using PIL to open PNG image from local machine 
@@ -143,7 +143,7 @@ def handwritten_prepro(image_path):
 IMG_pathdirectory = '/Users/EliWebster/Downloads/Painted_Images'
 
 
-# Initialize a list to store images, sort by name so labels match
+# Initialize a list to store our own images, sorted by name so labels correctly match image.
 image_list = []
 directory = os.listdir(IMG_pathdirectory)
 sorted_file = sorted(directory)
@@ -174,9 +174,7 @@ image_list = np.array(image_list)
 # reshaping so we have 50 flattened image arrays
 image_array = image_list.reshape(image_list.shape[0], -1)
 
-# This code below will print the shape of each image, should be 784 (it is)
-#for i, img in enumerate(image_array):
-#    print(f"Shape of image {i}: {img.shape}")
+
 
 # Stack the flattened images so it is in format (x, 784) - same as MNIST data
 array_flat = np.vstack(image_array)
@@ -186,12 +184,16 @@ print(f"Shape of array_flat: {array_flat.shape}")
 
 # use model.evaluate to test modoel's performance on testing data
 loss1, accuracy1 = NNmodel.evaluate(array_flat, labels_array, verbose = 2)
-print(f'\nTest loss', loss1)
-print(f'\nTest accuracy', accuracy1)
+print(f'\nHandwritten Test loss', loss1)
+print(f'\nHandwritten Test accuracy', accuracy1)
+
+# END OF TESTING OUR OWN DATASET OF HANDWRITTEN NUMBERS
+#---------------------------------------------------------------------------------------------------------------------------
 
 
 
-
+# VISUALIZING DATA WITH MATPLOTLIB
+#---------------------------------------------------------------------------------------------------------------------------
 
 # Plotting performance
 
@@ -223,27 +225,14 @@ plt.axis('off')
 plt.suptitle(f'Label is: {labels_array[0]}', fontsize=16)
 plt.show()
 
-# grabbing 25 of our own random images 
-Randnums = np.random.randint(0, image_array.shape[0], size=25)
-images = image_array[Randnums]
 
-
-# plotting 25 random images
-plt.figure(figsize=(5,5))
-for i in range(len(Randnums)):
-    plt.subplot(5, 5, i + 1)
-    image = images[i]
-    plt.imshow(image, cmap='gray')
-    plt.title(f'This is:' [labels_array[i]])
-    plt.axis('off')
-    
-plt.show()
-
-
-
-# Bar chart for testing our own data
+# Bar chart representing accuracy and loss for testing our own handwritten images
 plt.figure(figsize=(8, 6))
 plt.bar(['Test Accuracy', 'Test Loss'], [accuracy1, loss1], color=['blue', 'red'])
 plt.title('Test Accuracy and Loss')
 plt.ylabel('Value')
 plt.show()
+
+
+# END OF CODE
+#---------------------------------------------------------------------------------------------------------------------------
