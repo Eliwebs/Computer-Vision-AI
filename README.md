@@ -1,6 +1,6 @@
-# B351_Group19_Final
+# Computer Vision
 
-Github link: https://github.com/Eliwebs/B351_Group19_Final.git
+Github link: https://github.com/Eliwebs/Computer-Vision-AI.git
 
 Computer vision to recognize handwritten numbers
 
